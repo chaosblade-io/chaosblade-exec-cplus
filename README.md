@@ -1,2 +1,34 @@
-# chaosblade-exec-cplus
-C++ 应用混沌实验执行器
+![logo](https://chaosblade.oss-cn-hangzhou.aliyuncs.com/doc/image/chaosblade-logo.png)
+
+# Chaosblade-exec-cplus: Chaosblade executor for chaos experiments on c++ applications
+
+
+## Introduction
+The project is a chaosblade executor based on [GDB] for chaos 
+experiments on c++ applications. The drill can be implemented through the blade cli, see 
+[chaosblade](https://github.com/chaosblade-io/chaosblade) project for details.
+
+
+## Compiling
+In the project root directory, execute the following command to compile
+```bash
+Sh build.sh
+```
+
+The compilation result will be stored in the target directory.
+
+
+## Contributing
+We welcome every contribution, even if it is just a punctuation. See details of [CONTRIBUTING](CONTRIBUTING.md)
+
+
+## Bugs and Feedback
+For bug report, questions and discussions please submit [GitHub Issues](https://github.com/chaosblade-io/chaosblade-exec-cplus/issues).
+
+Contact us: chaosblade.io.01@gmail.com
+
+Gitter room: [chaosblade community](https://gitter.im/chaosblade-io/community)
+
+
+## License
+Chaosblade-exec-cplus is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full license text.
