@@ -12,7 +12,7 @@ experiments on c++ applications. The drill can be implemented through the blade 
 ## Compiling
 In the project root directory, execute the following command to compile
 ```bash
-sh build.sh
+Sh build.sh
 ```
 
 The compilation result will be stored in the target directory.
