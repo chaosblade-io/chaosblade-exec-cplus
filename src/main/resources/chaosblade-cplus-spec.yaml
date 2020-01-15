@@ -1,0 +1,132 @@
+kind: plugin
+version: v1
+items:
+- target: cplus
+  shortDesc: c++ experiment
+  longDesc: c++ experiment for testing program delay, variable changed and method return.
+  example: cplus delay --delayDuration 5 --breakLine tcp_server.cpp:39 --fileLocateAndName /home/admin/socketServer/main --forkMode child --processName main --delayDuration 5 --initParams 9527 --libLoad /home/lib
+  actions:
+  - action: delay
+    aliases: []
+    flags:
+    - desc: delay time
+      name: delayDuration
+      noArgs: false
+      required: true
+    longDesc: delay time...
+    matchers:
+    - desc: Injection line in source code
+      name: breakLine
+      noArgs: false
+      required: true
+    - desc: Startup file location and name
+      name: fileLocateAndName
+      noArgs: false
+      required: true
+    - desc: Initialization parameters for program startup (such as port number)
+      name: initParams
+      noArgs: false
+      required: true
+    - desc: Fault injection into child or parent processes (sub process:child ; main process:parent)
+      name: forkMode
+      noArgs: false
+      required: true
+    - desc: Application process name
+      name: processName
+      noArgs: false
+      required: true
+    - desc: If the class library needs to be loaded when the program starts, input the class library address
+      name: libLoad
+      noArgs: false
+      required: false
+    shortDesc: delay time
+  - action: modify
+    aliases: []
+    flags:
+    - desc: The name of the modified variable 
+      name: varaibleName
+      noArgs: false
+      required: true
+    - desc: The value of the modified variable 
+      name: varaibleValue
+      noArgs: false
+      required: true
+    longDesc: Modify value of the variable in source code when program running
+    matchers:
+    - desc: Injection line in source code
+      name: breakLine
+      noArgs: false
+      required: true
+    - desc: Startup file location and name
+      name: fileLocateAndName
+      noArgs: false
+      required: true
+    - desc: Initialization parameters for program startup (such as port number)
+      name: initParams
+      noArgs: false
+      required: true
+    - desc: Fault injection into child or parent processes (sub process:child ; main process:parent)
+      name: forkMode
+      noArgs: false
+      required: true
+    - desc: Application process name
+      name: processName
+      noArgs: false
+      required: true
+    - desc: If the class library needs to be loaded when the program starts, input the class library address
+      name: libLoad
+      noArgs: false
+      required: false
+    shortDesc: Modify value of the variable
+  - action: return
+    aliases: []
+    flags:
+    - desc: Value returned. If you want return
+        null, set --value null
+      name: returnValue
+      noArgs: false
+      required: true
+    longDesc: Return the specify value
+    matchers:
+    - desc: Injection line in source code
+      name: breakLine
+      noArgs: false
+      required: true
+    - desc: Startup file location and name
+      name: fileLocateAndName
+      noArgs: false
+      required: true
+    - desc: Initialization parameters for program startup (such as port number)
+      name: initParams
+      noArgs: false
+      required: true
+    - desc: Fault injection into child or parent processes (sub process:child ; main process:parent)
+      name: forkMode
+      noArgs: false
+      required: true
+    - desc: Application process name
+      name: processName
+      noArgs: false
+      required: true
+    - desc: If the class library needs to be loaded when the program starts, input the class library address
+      name: libLoad
+      noArgs: false
+      required: false
+    shortDesc: Return the specify value
+  prepare:
+    flags:
+    - desc: server's port to be opened 
+      name: port
+      noArgs: false
+      required: true
+    - desc: injection script location
+      name: script-location
+      noArgs: false
+      required: true
+    - desc: wait time for check status
+      name: wait-time
+      noArgs: false
+      required: true
+    required: true
+    type: cplus
+
