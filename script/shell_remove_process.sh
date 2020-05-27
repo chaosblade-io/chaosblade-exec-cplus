@@ -2,4 +2,6 @@
 
 pkill -f gdb
 
-pkill -f $1
+if [[ -n "$1" ]]; then
+    kill -9 "$1"
+fi

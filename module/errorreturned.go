@@ -69,11 +69,11 @@ func (e *ErrorReturnedExecutor) Exec(uid string, ctx context.Context, model *spe
 		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary processName value")
 	}
 	processCtx := context.WithValue(context.Background(), channel.ExcludeProcessKey, "blade")
-	localChannel := channel.NewLocalChannel()
-	pids, err := localChannel.GetPidsByProcessName(processName, processCtx)
+	pids, err := channel.NewLocalChannel().GetPidsByProcessName(processName, processCtx)
 	if err != nil {
 		logrus.Warnf("get pids by %s process name err, %v", processName, err)
 	}
+	localChannel := common.NewAsyncChannel()
 	if pids == nil || len(pids) == 0 {
 		args := buildArgs([]string{
 			model.ActionFlags["fileLocateAndName"],

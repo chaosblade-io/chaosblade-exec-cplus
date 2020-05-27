@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"strings"
 
 	"github.com/chaosblade-io/chaosblade-spec-go/channel"
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
+	"github.com/sirupsen/logrus"
 
 	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 )
@@ -42,9 +44,27 @@ func (d *DestroyController) GetRequestHandler() func(writer http.ResponseWriter,
 			return
 		}
 		processName := expModel.ActionFlags["processName"]
-		// TODO remove? kill process?
-		response := channel.NewLocalChannel().Run(context.Background(),
-			path.Join(common.GetScriptPath(), common.RemoveProcessScript), processName)
+		if processName == "" {
+			fmt.Fprintf(writer, spec.ReturnSuccess("success").Print())
+			return
+		}
+		debug := expModel.ActionFlags["debug"] == "true"
+		if debug {
+			logrus.SetLevel(logrus.DebugLevel)
+		}
+		localChannel := channel.NewLocalChannel()
+		pids, err := localChannel.GetPidsByProcessName(processName, context.Background())
+		if err == nil && len(pids) == 0 {
+			fmt.Fprintf(writer, spec.ReturnSuccess("success").Print())
+			return
+		}
+		var pid string
+		if len(pids) > 0 {
+			pid = strings.Join(pids, ",")
+		}
+
+		response := localChannel.Run(context.Background(),
+			path.Join(common.GetScriptPath(), common.RemoveProcessScript), pid)
 		fmt.Fprintf(writer, response.Print())
 	}
 }
