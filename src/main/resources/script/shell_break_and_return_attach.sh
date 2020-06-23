@@ -33,7 +33,7 @@ expect -c "
     \">\" {send \"end\n\"}
   }
   expect {
-    \"gdb\" {send \"r $7\n\";}
+    \"gdb\" {send \"c $7\n\";}
   }
   expect {
     \"beginning\" {send \"y\n\";}
