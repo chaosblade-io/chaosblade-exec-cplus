@@ -4,17 +4,17 @@ BLADE_SRC_ROOT=$(shell pwd)
 UNAME := $(shell uname)
 
 ifeq ($(BLADE_VERSION), )
-	BLADE_VERSION=0.6.0
+	BLADE_VERSION=0.7.0
 endif
 
 BUILD_TARGET=build-target
 BUILD_TARGET_DIR_NAME=chaosblade-$(BLADE_VERSION)
 BUILD_TARGET_PKG_DIR=$(BUILD_TARGET)/chaosblade-$(BLADE_VERSION)
-BUILD_TARGET_BIN=$(BUILD_TARGET_PKG_DIR)/bin
+BUILD_TARGET_YAML=$(BUILD_TARGET_PKG_DIR)/yaml
 BUILD_TARGET_CPLUS_LIB=$(BUILD_TARGET_PKG_DIR)/lib/cplus
 BUILD_TARGET_CPLUS_SCRIPT=$(BUILD_TARGET_CPLUS_LIB)/script
 # yaml file name
-CPLUS_YAML_FILE=$(BUILD_TARGET_BIN)/chaosblade-cplus-spec.yaml
+CPLUS_YAML_FILE=$(BUILD_TARGET_YAML)/chaosblade-cplus-spec.yaml
 # agent file name
 CPLUS_AGENT_FILE_NAME=chaosblade-exec-cplus
 
@@ -31,7 +31,7 @@ build: pre_build build_cplus build_yaml
 
 pre_build:
 	rm -rf $(BUILD_TARGET_PKG_DIR)
-	mkdir -p $(BUILD_TARGET_BIN) $(BUILD_TARGET_CPLUS_SCRIPT)
+	mkdir -p $(BUILD_TARGET_YAML) $(BUILD_TARGET_CPLUS_SCRIPT)
 
 build_yaml: build/spec.go
 	$(GO) run $< $(CPLUS_YAML_FILE)
