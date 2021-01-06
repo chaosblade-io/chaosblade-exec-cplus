@@ -25,6 +25,7 @@ import (
 
 	"github.com/chaosblade-io/chaosblade-spec-go/channel"
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
+	"github.com/chaosblade-io/chaosblade-spec-go/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
@@ -43,15 +44,18 @@ func (d *DestroyController) GetRequestHandler() func(writer http.ResponseWriter,
 	return func(writer http.ResponseWriter, request *http.Request) {
 		err := request.ParseForm()
 		if err != nil {
-			fmt.Fprintf(writer,
-				spec.ReturnFail(spec.Code[spec.IllegalParameters], err.Error()).Print())
+			util.Errorf("", util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterRequestFailed].Err+" ,err:%s", err.Error()))
+			response := spec.ResponseFailWaitResult(spec.ParameterRequestFailed, spec.ResponseErr[spec.ParameterRequestFailed].Err,
+				spec.ResponseErr[spec.ParameterRequestFailed].ErrInfo)
+			fmt.Fprintf(writer, response.Print())
 			return
 		}
 
 		suid := request.Form.Get("suid")
 		if suid == "" {
-			fmt.Fprintf(writer,
-				spec.ReturnFail(spec.Code[spec.IllegalParameters], "illegal suid parameter").Print())
+			response := spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "suid"),
+				fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "suid"))
+			fmt.Fprintf(writer, response.Print())
 			return
 		}
 		expModel := Manager.Experiments[suid]

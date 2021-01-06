@@ -18,10 +18,12 @@ package module
 
 import (
 	"context"
+	"fmt"
 	"path"
 
 	"github.com/chaosblade-io/chaosblade-spec-go/channel"
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
+	"github.com/chaosblade-io/chaosblade-spec-go/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
@@ -79,16 +81,22 @@ func (v *VariableModifiedExecutor) Name() string {
 func (v *VariableModifiedExecutor) Exec(uid string, ctx context.Context, model *spec.ExpModel) *spec.Response {
 	variableName := model.ActionFlags["variableName"]
 	if variableName == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary variableName value")
+		util.Errorf(uid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "variableName"))
+		return spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "variableName"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "variableName"))
 	}
 	variableValue := model.ActionFlags["variableValue"]
 	if variableValue == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary variableValue value")
+		util.Errorf(uid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "variableValue"))
+		return spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "variableValue"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "variableValue"))
 	}
 	// search pid by process name
 	processName := model.ActionFlags["processName"]
 	if processName == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary processName value")
+		util.Errorf(uid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "processName"))
+		return spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "processName"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "processName"))
 	}
 	processCtx := context.WithValue(context.Background(), channel.ExcludeProcessKey, "blade")
 	pids, err := channel.NewLocalChannel().GetPidsByProcessName(processName, processCtx)
