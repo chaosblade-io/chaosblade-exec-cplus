@@ -18,10 +18,12 @@ package module
 
 import (
 	"context"
+	"fmt"
 	"path"
 
 	"github.com/chaosblade-io/chaosblade-spec-go/channel"
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
+	"github.com/chaosblade-io/chaosblade-spec-go/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
@@ -77,12 +79,16 @@ func (e *ErrorReturnedExecutor) Exec(uid string, ctx context.Context, model *spe
 	}
 	returnValue := model.ActionFlags["returnValue"]
 	if returnValue == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary returnValue value")
+		util.Errorf(uid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "returnValue"))
+		return spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "returnValue"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "returnValue"))
 	}
 	// search pid by process name
 	processName := model.ActionFlags["processName"]
 	if processName == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary processName value")
+		util.Errorf(uid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "processName"))
+		return spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "processName"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "processName"))
 	}
 	processCtx := context.WithValue(context.Background(), channel.ExcludeProcessKey, "blade")
 	pids, err := channel.NewLocalChannel().GetPidsByProcessName(processName, processCtx)

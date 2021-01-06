@@ -22,6 +22,7 @@ import (
 	"net/http"
 
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
+	"github.com/chaosblade-io/chaosblade-spec-go/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
@@ -40,17 +41,22 @@ func (c *CreateController) GetRequestHandler() func(writer http.ResponseWriter, 
 	return func(writer http.ResponseWriter, request *http.Request) {
 		expModel, suid, err := convertRequestToExpModel(request)
 		if err != nil {
-			fmt.Fprintf(writer, spec.ReturnFail(spec.Code[spec.IllegalParameters], err.Error()).Print())
+			fmt.Fprintf(writer, err.Error())
 			return
 		}
 		actionModel := Manager.Actions[expModel.ActionName]
 		if actionModel == nil {
-			fmt.Fprintf(writer, spec.ReturnFail(spec.Code[spec.IllegalParameters], "action not supported").Print())
+			util.Errorf(suid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.CplusActionNotSupport].ErrInfo, expModel.ActionName))
+			response := spec.ResponseFailWaitResult(spec.CplusActionNotSupport, fmt.Sprintf(spec.ResponseErr[spec.CplusActionNotSupport].Err, expModel.ActionName),
+				fmt.Sprintf(spec.ResponseErr[spec.CplusActionNotSupport].ErrInfo, expModel.ActionName))
+			fmt.Fprintf(writer, response.Print())
 			return
 		}
 		// record
 		err = Manager.Record(suid, expModel)
 		if err != nil {
+			// todo : need not edit, because Manager.Record alawys return nil, now!
+			util.Errorf(suid, util.GetRunFuncName(), "the experiment exists")
 			fmt.Fprintf(writer, spec.ReturnFail(spec.Code[spec.IllegalParameters], "the experiment exists").Print())
 			return
 		}
@@ -73,34 +79,48 @@ func convertRequestToExpModel(request *http.Request) (*spec.ExpModel, string, er
 
 	suid := request.Form.Get("suid")
 	if suid == "" {
-		return nil, "", fmt.Errorf("illegal suid parameter")
+		util.Errorf(suid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "suid"))
+		return nil, "", spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "suid"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "suid"))
 	}
 	target := request.Form.Get("target")
 	if target != common.TargetName {
-		return nil, suid, fmt.Errorf("the target not support")
+		util.Errorf(suid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterInvalidCplusTarget].ErrInfo, target))
+		return nil, suid, spec.ResponseFailWaitResult(spec.ParameterInvalidCplusTarget, fmt.Sprintf(spec.ResponseErr[spec.ParameterInvalidCplusTarget].Err, target),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterInvalidCplusTarget].ErrInfo, target))
 	}
 	action := request.Form.Get("action")
 	if action == "" {
-		return nil, suid, fmt.Errorf("less action parameter")
+		util.Errorf(suid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "action"))
+		return nil, suid, spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "action"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "action"))
 	}
 	breakLine := request.Form.Get("breakLine")
 	if breakLine == "" {
-		return nil, suid, fmt.Errorf("less breakLine parameter")
+		util.Errorf(suid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "breakLine"))
+		return nil, suid, spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "breakLine"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "breakLine"))
 	}
 	flags["breakLine"] = breakLine
 	fileLocateAndName := request.Form.Get("fileLocateAndName")
 	if fileLocateAndName == "" {
-		return nil, suid, fmt.Errorf("less fileLocateAndName parameter")
+		util.Errorf(suid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "fileLocateAndName"))
+		return nil, suid, spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "fileLocateAndName"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "fileLocateAndName"))
 	}
 	flags["fileLocateAndName"] = fileLocateAndName
 	forkMode := request.Form.Get("forkMode")
 	if forkMode == "" {
-		return nil, suid, fmt.Errorf("less forkMode parameter")
+		util.Errorf(suid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "forkMode"))
+		return nil, suid, spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "forkMode"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "forkMode"))
 	}
 	flags["forkMode"] = forkMode
 	processName := request.Form.Get("processName")
 	if processName == "" {
-		return nil, suid, fmt.Errorf("less processName parameter")
+		util.Errorf(suid, util.GetRunFuncName(), fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "processName"))
+		return nil, suid, spec.ResponseFailWaitResult(spec.ParameterLess, fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].Err, "processName"),
+			fmt.Sprintf(spec.ResponseErr[spec.ParameterLess].ErrInfo, "processName"))
 	}
 	flags["processName"] = processName
 	libLoad := request.Form.Get("libLoad")
