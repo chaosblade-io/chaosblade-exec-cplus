@@ -40,18 +40,18 @@ func (c *CreateController) GetRequestHandler() func(writer http.ResponseWriter, 
 	return func(writer http.ResponseWriter, request *http.Request) {
 		expModel, suid, err := convertRequestToExpModel(request)
 		if err != nil {
-			fmt.Fprintf(writer, spec.ReturnFail(spec.Code[spec.IllegalParameters], err.Error()).Print())
+			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.CommandIllegal, err).Print())
 			return
 		}
 		actionModel := Manager.Actions[expModel.ActionName]
 		if actionModel == nil {
-			fmt.Fprintf(writer, spec.ReturnFail(spec.Code[spec.IllegalParameters], "action not supported").Print())
+			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.ActionNotSupport, expModel.ActionName).Print())
 			return
 		}
 		// record
 		err = Manager.Record(suid, expModel)
 		if err != nil {
-			fmt.Fprintf(writer, spec.ReturnFail(spec.Code[spec.IllegalParameters], "the experiment exists").Print())
+			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.DatabaseError, "record", err).Print())
 			return
 		}
 		// TODO 开启 debug

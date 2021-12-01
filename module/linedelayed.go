@@ -74,12 +74,12 @@ func (l *LineDelayedExecutor) Name() string {
 func (l *LineDelayedExecutor) Exec(uid string, ctx context.Context, model *spec.ExpModel) *spec.Response {
 	delayDuration := model.ActionFlags["delayDuration"]
 	if delayDuration == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary delayDuration value")
+		return spec.ResponseFailWithFlags(spec.ParameterLess, "delayDuration")
 	}
 	// search pid by process name
 	processName := model.ActionFlags["processName"]
 	if processName == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary processName value")
+		return spec.ResponseFailWithFlags(spec.ParameterLess, "processName")
 	}
 	processCtx := context.WithValue(context.Background(), channel.ExcludeProcessKey, "blade")
 	pids, err := channel.NewLocalChannel().GetPidsByProcessName(processName, processCtx)

@@ -43,15 +43,12 @@ func (d *DestroyController) GetRequestHandler() func(writer http.ResponseWriter,
 	return func(writer http.ResponseWriter, request *http.Request) {
 		err := request.ParseForm()
 		if err != nil {
-			fmt.Fprintf(writer,
-				spec.ReturnFail(spec.Code[spec.IllegalParameters], err.Error()).Print())
+			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.CommandIllegal, err).Print())
 			return
 		}
-
 		suid := request.Form.Get("suid")
 		if suid == "" {
-			fmt.Fprintf(writer,
-				spec.ReturnFail(spec.Code[spec.IllegalParameters], "illegal suid parameter").Print())
+			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.ParameterLess, "suid").Print())
 			return
 		}
 		expModel := Manager.Experiments[suid]

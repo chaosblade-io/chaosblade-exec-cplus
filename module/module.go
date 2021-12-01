@@ -47,7 +47,7 @@ func NewCPlusCommandModelSpec() spec.ExpModelCommandSpec {
 				&spec.ExpFlag{
 					Name:     "initParams",
 					Desc:     "Initialization parameters for program startup (such as port number)",
-					Required: true,
+					Required: false,
 				},
 				&spec.ExpFlag{
 					Name:     "forkMode",

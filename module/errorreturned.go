@@ -73,16 +73,16 @@ func (e *ErrorReturnedExecutor) Name() string {
 
 func (e *ErrorReturnedExecutor) Exec(uid string, ctx context.Context, model *spec.ExpModel) *spec.Response {
 	if _, ok := spec.IsDestroy(ctx); ok {
-		return spec.ReturnFail(spec.Code[spec.ServerError], "illegal processing")
+		return spec.ResponseFailWithFlags(spec.CommandIllegal, "destroy")
 	}
 	returnValue := model.ActionFlags["returnValue"]
 	if returnValue == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary returnValue value")
+		return spec.ResponseFailWithFlags(spec.ParameterLess, "returnValue")
 	}
 	// search pid by process name
 	processName := model.ActionFlags["processName"]
 	if processName == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary processName value")
+		return spec.ResponseFailWithFlags(spec.ParameterLess, "processName")
 	}
 	processCtx := context.WithValue(context.Background(), channel.ExcludeProcessKey, "blade")
 	pids, err := channel.NewLocalChannel().GetPidsByProcessName(processName, processCtx)

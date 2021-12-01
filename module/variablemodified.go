@@ -79,16 +79,16 @@ func (v *VariableModifiedExecutor) Name() string {
 func (v *VariableModifiedExecutor) Exec(uid string, ctx context.Context, model *spec.ExpModel) *spec.Response {
 	variableName := model.ActionFlags["variableName"]
 	if variableName == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary variableName value")
+		return spec.ResponseFailWithFlags(spec.ParameterLess, "variableName")
 	}
 	variableValue := model.ActionFlags["variableValue"]
 	if variableValue == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary variableValue value")
+		return spec.ResponseFailWithFlags(spec.ParameterLess, "variableValue")
 	}
 	// search pid by process name
 	processName := model.ActionFlags["processName"]
 	if processName == "" {
-		return spec.ReturnFail(spec.Code[spec.IllegalParameters], "less necessary processName value")
+		return spec.ResponseFailWithFlags(spec.ParameterLess, "processName")
 	}
 	processCtx := context.WithValue(context.Background(), channel.ExcludeProcessKey, "blade")
 	pids, err := channel.NewLocalChannel().GetPidsByProcessName(processName, processCtx)
