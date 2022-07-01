@@ -107,7 +107,10 @@ func (l *LineDelayedExecutor) Exec(uid string, ctx context.Context, model *spec.
 			delayDuration,
 			model.ActionFlags["initParams"],
 		})
-		return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ResponseDelayAttachScript), args)
+		if "child" == model.ActionFlags["forkMode"] {
+			return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ResponseDelayAttachScript), args)
+		}
+		return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ResponseDelayAttachParentScript), args)
 	}
 }
 

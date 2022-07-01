@@ -118,7 +118,10 @@ func (v *VariableModifiedExecutor) Exec(uid string, ctx context.Context, model *
 			variableValue,
 			model.ActionFlags["initParams"],
 		})
-		return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ModifyVariableAttachScript), args)
+		if "child" == model.ActionFlags["forkMode"] {
+			return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ModifyVariableAttachScript), args)
+		}
+		return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ModifyVariableAttachParentScript), args)
 	}
 }
 
