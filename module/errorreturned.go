@@ -110,7 +110,10 @@ func (e *ErrorReturnedExecutor) Exec(uid string, ctx context.Context, model *spe
 			returnValue,
 			model.ActionFlags["initParams"],
 		})
-		return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.BreakAndReturnAttachScript), args)
+		if "child" == model.ActionFlags["forkMode"] {
+			return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.BreakAndReturnAttachScript), args)
+		}
+		return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.BreakAndReturnAttachParentScript), args)
 	}
 }
 

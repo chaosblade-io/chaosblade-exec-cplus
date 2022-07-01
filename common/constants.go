@@ -31,14 +31,17 @@ const (
 )
 
 const (
-	InitializationScript        = "shell_initialization.sh"
-	RemoveProcessScript         = "shell_remove_process.sh"
-	ResponseDelayScript         = "shell_response_delay.sh"
-	ResponseDelayAttachScript   = "shell_response_delay_attach.sh"
-	BreakAndReturnScript        = "shell_break_and_return.sh"
-	BreakAndReturnAttachScript  = "shell_break_and_return_attach.sh"
-	ModifyVariableScript        = "shell_modify_variable.sh"
-	ModifyVariableAttachScript  = "shell_modify_variable_attach.sh"
-	CheckProcessIdScript        = "shell_check_process_id.sh"
-	CheckProcessDuplicateScript = "shell_check_process_duplicate.sh"
+	InitializationScript             = "shell_initialization.sh"
+	RemoveProcessScript              = "shell_remove_process.sh"
+	ResponseDelayScript              = "shell_response_delay.sh"
+	ResponseDelayAttachScript        = "shell_response_delay_attach.sh"
+	ResponseDelayAttachParentScript  = "shell_response_delay_attach_parent.sh"
+	BreakAndReturnScript             = "shell_break_and_return.sh"
+	BreakAndReturnAttachScript       = "shell_break_and_return_attach.sh"
+	BreakAndReturnAttachParentScript = "shell_break_and_return_attach_parent.sh"
+	ModifyVariableScript             = "shell_modify_variable.sh"
+	ModifyVariableAttachScript       = "shell_modify_variable_attach.sh"
+	ModifyVariableAttachParentScript = "shell_modify_variable_attach_parent.sh"
+	CheckProcessIdScript             = "shell_check_process_id.sh"
+	CheckProcessDuplicateScript      = "shell_check_process_duplicate.sh"
 )
