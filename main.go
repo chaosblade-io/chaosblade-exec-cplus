@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/chaosblade-io/chaosblade-spec-go/channel"
+	"github.com/chaosblade-io/chaosblade-spec-go/util"
 
 	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 	"github.com/chaosblade-io/chaosblade-exec-cplus/controller"
@@ -45,6 +46,7 @@ func main() {
 	flag.BoolVar(&config.nohup, "nohup", false, "used by internal")
 
 	flag.Parse()
+	util.InitLog(util.Custom)
 	ctx := context.WithValue(context.Background(), channel.ProcessKey, "nohup")
 	pids, err := channel.NewLocalChannel().GetPidsByProcessName(common.BinName, ctx)
 	if err != nil {

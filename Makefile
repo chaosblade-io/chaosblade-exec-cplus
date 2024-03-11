@@ -4,7 +4,7 @@ BLADE_SRC_ROOT=$(shell pwd)
 UNAME := $(shell uname)
 
 ifeq ($(BLADE_VERSION), )
-	BLADE_VERSION=1.4.0
+	BLADE_VERSION=1.7.3
 endif
 
 BUILD_TARGET=build-target
