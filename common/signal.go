@@ -17,12 +17,13 @@
 package common
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 
-	"github.com/sirupsen/logrus"
+	"github.com/chaosblade-io/chaosblade-spec-go/log"
 )
 
 type ShutdownHook interface {
@@ -36,7 +37,7 @@ func Hold(hooks ...ShutdownHook) {
 	for {
 		switch <-sig {
 		case syscall.SIGINT, syscall.SIGTERM:
-			logrus.Warningln("received SIGINT/SIGTERM, exit")
+			log.Warnf(context.TODO(), "received SIGINT/SIGTERM, exit")
 			for _, hook := range hooks {
 				hook.Shutdown()
 			}
@@ -46,7 +47,7 @@ func Hold(hooks ...ShutdownHook) {
 				hook.Shutdown()
 			}
 			len := runtime.Stack(buf, true)
-			logrus.Warningf("received SIGQUIT\n%s\n", buf[:len])
+			log.Warnf(context.TODO(), "received SIGQUIT\n%s\n", buf[:len])
 		}
 	}
 }
