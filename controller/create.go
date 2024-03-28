@@ -22,7 +22,6 @@ import (
 	"net/http"
 
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
-	"github.com/sirupsen/logrus"
 
 	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 )
@@ -54,8 +53,6 @@ func (c *CreateController) GetRequestHandler() func(writer http.ResponseWriter, 
 			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.DatabaseError, "record", err).Print())
 			return
 		}
-		// TODO 开启 debug
-		logrus.SetLevel(logrus.DebugLevel)
 		response := actionModel.Executor().Exec(suid, context.Background(), expModel)
 		if !response.Success {
 			Manager.Remove(suid)

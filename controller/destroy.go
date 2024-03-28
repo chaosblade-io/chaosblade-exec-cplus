@@ -23,11 +23,9 @@ import (
 	"path"
 	"strings"
 
+	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 	"github.com/chaosblade-io/chaosblade-spec-go/channel"
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
-	"github.com/sirupsen/logrus"
-
-	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 )
 
 const DestroyName = "destroy"
@@ -60,10 +58,6 @@ func (d *DestroyController) GetRequestHandler() func(writer http.ResponseWriter,
 		if processName == "" {
 			fmt.Fprintf(writer, spec.ReturnSuccess("success").Print())
 			return
-		}
-		debug := expModel.ActionFlags["debug"] == "true"
-		if debug {
-			logrus.SetLevel(logrus.DebugLevel)
 		}
 		localChannel := channel.NewLocalChannel()
 		pids, err := localChannel.GetPidsByProcessName(processName, context.Background())
