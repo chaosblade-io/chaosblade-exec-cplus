@@ -1,12 +1,10 @@
 #!/bin/bash
 
 expect -c "
-  spawn gdb -q attach $1
+  set timeout 60000
+  spawn gdb -q -iex \"set pagination off\" attach $1
   expect {
     \"gdb\" {send \"set follow-fork-mode $2\n\";}
-  }
-  expect {
-    \"gdb\" {send \"set pagination off\n\";}
   }
   expect {
     \"gdb\" {send \"$3\n\";}
@@ -34,6 +32,9 @@ expect -c "
   }
   expect {
     \"gdb\" {send \"c\n\";}
+  }
+  expect {
+    \"exited\" {send \"quit\n\";}
   }
 
  interact
