@@ -20,7 +20,28 @@ BUILD_TARGET_PKG_DIR=$(BUILD_TARGET)/chaosblade-$(BLADE_VERSION)
 BUILD_TARGET_YAML=$(BUILD_TARGET_PKG_DIR)/yaml
 BUILD_TARGET_CPLUS_LIB=$(BUILD_TARGET_PKG_DIR)/lib/cplus
 BUILD_TARGET_CPLUS_SCRIPT=$(BUILD_TARGET_CPLUS_LIB)/script
-# yaml file name
+
+# Platform-specific directory functions
+define get_platform_dir_name
+chaosblade-$(BLADE_VERSION)-$(1)
+endef
+
+define get_platform_pkg_dir
+$(BUILD_TARGET)/chaosblade-$(BLADE_VERSION)-$(1)
+endef
+
+define get_platform_yaml_dir
+$(BUILD_TARGET)/chaosblade-$(BLADE_VERSION)-$(1)/yaml
+endef
+
+define get_platform_lib_dir
+$(BUILD_TARGET)/chaosblade-$(BLADE_VERSION)-$(1)/lib/cplus
+endef
+
+define get_platform_script_dir
+$(BUILD_TARGET)/chaosblade-$(BLADE_VERSION)-$(1)/lib/cplus/script
+endef
+# yaml file name (will be overridden by platform-specific targets)
 CPLUS_YAML_FILE=$(BUILD_TARGET_YAML)/chaosblade-cplus-spec-$(BLADE_VERSION).yaml
 # agent file name
 CPLUS_AGENT_FILE_NAME=chaosblade-exec-cplus
@@ -60,6 +81,7 @@ help:
 	@echo ""
 	@echo "Available Build Targets:"
 	@echo "  build          - Build current platform version"
+	@echo "  build_all      - Build all platform versions"
 	@echo "  linux_amd64    - Build Linux AMD64 version"
 	@echo "  linux_arm64    - Build Linux ARM64 version"
 	@echo "  darwin_amd64   - Build macOS AMD64 version"
@@ -79,6 +101,7 @@ help:
 	@echo "Usage Examples:"
 	@echo "  make help                    # Show help"
 	@echo "  make build                   # Build current platform version"
+	@echo "  make build_all               # Build all platform versions"
 	@echo "  make linux_arm64            # Build Linux ARM64 version"
 	@echo "  BLADE_VERSION=1.8.0 make build  # Build with specified version"
 	@echo ""
@@ -111,35 +134,75 @@ build_cplus: main.go
 	$(GO) build $(GO_FLAGS_COMMON) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) $<
 
 # Multi-platform build targets
-linux_amd64: pre_build
-	GOOS=linux GOARCH=amd64 $(GO_CROSS) build $(GO_FLAGS_LINUX_AMD64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) main.go
-	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
-	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
-	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
+linux_amd64:
+	$(eval PLATFORM := linux_amd64)
+	$(eval PLATFORM_PKG_DIR := $(call get_platform_pkg_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_DIR := $(call get_platform_yaml_dir,$(PLATFORM)))
+	$(eval PLATFORM_LIB_DIR := $(call get_platform_lib_dir,$(PLATFORM)))
+	$(eval PLATFORM_SCRIPT_DIR := $(call get_platform_script_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_FILE := $(PLATFORM_YAML_DIR)/chaosblade-cplus-spec-$(BLADE_VERSION).yaml)
+	rm -rf $(PLATFORM_PKG_DIR)
+	mkdir -p $(PLATFORM_YAML_DIR) $(PLATFORM_SCRIPT_DIR)
+	GOOS=linux GOARCH=amd64 $(GO_CROSS) build $(GO_FLAGS_LINUX_AMD64) -o $(PLATFORM_LIB_DIR)/$(CPLUS_AGENT_FILE_NAME) main.go
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(PLATFORM_YAML_FILE)
+	cp -R script/* $(PLATFORM_SCRIPT_DIR)
+	chmod -R 755 $(PLATFORM_LIB_DIR)
 
-linux_arm64: pre_build
-	GOOS=linux GOARCH=arm64 $(GO_CROSS) build $(GO_FLAGS_LINUX_ARM64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) main.go
-	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
-	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
-	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
+linux_arm64:
+	$(eval PLATFORM := linux_arm64)
+	$(eval PLATFORM_PKG_DIR := $(call get_platform_pkg_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_DIR := $(call get_platform_yaml_dir,$(PLATFORM)))
+	$(eval PLATFORM_LIB_DIR := $(call get_platform_lib_dir,$(PLATFORM)))
+	$(eval PLATFORM_SCRIPT_DIR := $(call get_platform_script_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_FILE := $(PLATFORM_YAML_DIR)/chaosblade-cplus-spec-$(BLADE_VERSION).yaml)
+	rm -rf $(PLATFORM_PKG_DIR)
+	mkdir -p $(PLATFORM_YAML_DIR) $(PLATFORM_SCRIPT_DIR)
+	GOOS=linux GOARCH=arm64 $(GO_CROSS) build $(GO_FLAGS_LINUX_ARM64) -o $(PLATFORM_LIB_DIR)/$(CPLUS_AGENT_FILE_NAME) main.go
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(PLATFORM_YAML_FILE)
+	cp -R script/* $(PLATFORM_SCRIPT_DIR)
+	chmod -R 755 $(PLATFORM_LIB_DIR)
 
-darwin_amd64: pre_build
-	GOOS=darwin GOARCH=amd64 $(GO) build $(GO_FLAGS_DARWIN_AMD64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) main.go
-	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
-	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
-	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
+darwin_amd64:
+	$(eval PLATFORM := darwin_amd64)
+	$(eval PLATFORM_PKG_DIR := $(call get_platform_pkg_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_DIR := $(call get_platform_yaml_dir,$(PLATFORM)))
+	$(eval PLATFORM_LIB_DIR := $(call get_platform_lib_dir,$(PLATFORM)))
+	$(eval PLATFORM_SCRIPT_DIR := $(call get_platform_script_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_FILE := $(PLATFORM_YAML_DIR)/chaosblade-cplus-spec-$(BLADE_VERSION).yaml)
+	rm -rf $(PLATFORM_PKG_DIR)
+	mkdir -p $(PLATFORM_YAML_DIR) $(PLATFORM_SCRIPT_DIR)
+	GOOS=darwin GOARCH=amd64 $(GO) build $(GO_FLAGS_DARWIN_AMD64) -o $(PLATFORM_LIB_DIR)/$(CPLUS_AGENT_FILE_NAME) main.go
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(PLATFORM_YAML_FILE)
+	cp -R script/* $(PLATFORM_SCRIPT_DIR)
+	chmod -R 755 $(PLATFORM_LIB_DIR)
 
-darwin_arm64: pre_build
-	GOOS=darwin GOARCH=arm64 $(GO) build $(GO_FLAGS_DARWIN_ARM64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) main.go
-	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
-	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
-	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
+darwin_arm64:
+	$(eval PLATFORM := darwin_arm64)
+	$(eval PLATFORM_PKG_DIR := $(call get_platform_pkg_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_DIR := $(call get_platform_yaml_dir,$(PLATFORM)))
+	$(eval PLATFORM_LIB_DIR := $(call get_platform_lib_dir,$(PLATFORM)))
+	$(eval PLATFORM_SCRIPT_DIR := $(call get_platform_script_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_FILE := $(PLATFORM_YAML_DIR)/chaosblade-cplus-spec-$(BLADE_VERSION).yaml)
+	rm -rf $(PLATFORM_PKG_DIR)
+	mkdir -p $(PLATFORM_YAML_DIR) $(PLATFORM_SCRIPT_DIR)
+	GOOS=darwin GOARCH=arm64 $(GO) build $(GO_FLAGS_DARWIN_ARM64) -o $(PLATFORM_LIB_DIR)/$(CPLUS_AGENT_FILE_NAME) main.go
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(PLATFORM_YAML_FILE)
+	cp -R script/* $(PLATFORM_SCRIPT_DIR)
+	chmod -R 755 $(PLATFORM_LIB_DIR)
 
-windows_amd64: pre_build
-	GOOS=windows GOARCH=amd64 $(GO_CROSS) build $(GO_FLAGS_WINDOWS_AMD64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME).exe main.go
-	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
-	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
-	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
+windows_amd64:
+	$(eval PLATFORM := windows_amd64)
+	$(eval PLATFORM_PKG_DIR := $(call get_platform_pkg_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_DIR := $(call get_platform_yaml_dir,$(PLATFORM)))
+	$(eval PLATFORM_LIB_DIR := $(call get_platform_lib_dir,$(PLATFORM)))
+	$(eval PLATFORM_SCRIPT_DIR := $(call get_platform_script_dir,$(PLATFORM)))
+	$(eval PLATFORM_YAML_FILE := $(PLATFORM_YAML_DIR)/chaosblade-cplus-spec-$(BLADE_VERSION).yaml)
+	rm -rf $(PLATFORM_PKG_DIR)
+	mkdir -p $(PLATFORM_YAML_DIR) $(PLATFORM_SCRIPT_DIR)
+	GOOS=windows GOARCH=amd64 $(GO_CROSS) build $(GO_FLAGS_WINDOWS_AMD64) -o $(PLATFORM_LIB_DIR)/$(CPLUS_AGENT_FILE_NAME).exe main.go
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(PLATFORM_YAML_FILE)
+	cp -R script/* $(PLATFORM_SCRIPT_DIR)
+	chmod -R 755 $(PLATFORM_LIB_DIR)
 
 # test
 test:
@@ -149,5 +212,17 @@ test:
 clean:
 	$(GO) clean ./...
 	rm -rf $(BUILD_TARGET)
+
+# Build all platforms
+build_all: linux_amd64 linux_arm64 darwin_amd64 darwin_arm64 windows_amd64
+	@echo "=========================================="
+	@echo "All platform builds completed successfully!"
+	@echo "Generated directories:"
+	@echo "  - chaosblade-$(BLADE_VERSION)-linux_amd64"
+	@echo "  - chaosblade-$(BLADE_VERSION)-linux_arm64"
+	@echo "  - chaosblade-$(BLADE_VERSION)-darwin_amd64"
+	@echo "  - chaosblade-$(BLADE_VERSION)-darwin_arm64"
+	@echo "  - chaosblade-$(BLADE_VERSION)-windows_amd64"
+	@echo "=========================================="
 
 all: build test
