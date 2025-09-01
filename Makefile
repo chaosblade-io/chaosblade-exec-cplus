@@ -32,6 +32,10 @@ GO=env $(GO_ENV) $(GO_MODULE) go
 # Cross-compilation GO command (without CGO)
 GO_CROSS=env CGO_ENABLED=0 GO111MODULE=on go
 
+# Host platform for running generators (ensure go run executes on host arch)
+HOST_GOOS=$(shell go env GOHOSTOS)
+HOST_GOARCH=$(shell go env GOHOSTARCH)
+
 # Build flags for different platforms with version information
 GO_FLAGS_LINUX_AMD64=-ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)"
 GO_FLAGS_LINUX_ARM64=-ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)"
@@ -101,7 +105,7 @@ pre_build:
 	mkdir -p $(BUILD_TARGET_YAML) $(BUILD_TARGET_CPLUS_SCRIPT)
 
 build_yaml: build/spec.go
-	$(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" $< $(CPLUS_YAML_FILE)
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" $< $(CPLUS_YAML_FILE)
 
 build_cplus: main.go
 	$(GO) build $(GO_FLAGS_COMMON) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) $<
@@ -109,31 +113,31 @@ build_cplus: main.go
 # Multi-platform build targets
 linux_amd64: pre_build
 	GOOS=linux GOARCH=amd64 $(GO_CROSS) build $(GO_FLAGS_LINUX_AMD64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) main.go
-	$(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
 	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
 	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
 
 linux_arm64: pre_build
 	GOOS=linux GOARCH=arm64 $(GO_CROSS) build $(GO_FLAGS_LINUX_ARM64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) main.go
-	$(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
 	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
 	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
 
 darwin_amd64: pre_build
 	GOOS=darwin GOARCH=amd64 $(GO) build $(GO_FLAGS_DARWIN_AMD64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) main.go
-	$(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
 	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
 	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
 
 darwin_arm64: pre_build
 	GOOS=darwin GOARCH=arm64 $(GO) build $(GO_FLAGS_DARWIN_ARM64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME) main.go
-	$(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
 	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
 	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
 
 windows_amd64: pre_build
 	GOOS=windows GOARCH=amd64 $(GO_CROSS) build $(GO_FLAGS_WINDOWS_AMD64) -o $(BUILD_TARGET_CPLUS_LIB)/$(CPLUS_AGENT_FILE_NAME).exe main.go
-	$(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
+	GOOS=$(HOST_GOOS) GOARCH=$(HOST_GOARCH) $(GO) run -ldflags="-X main.Version=$(BLADE_VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildTime=$(BUILD_TIME) -X main.BuildType=$(BUILD_TYPE)" build/spec.go $(CPLUS_YAML_FILE)
 	cp -R script/* $(BUILD_TARGET_CPLUS_SCRIPT)
 	chmod -R 755 $(BUILD_TARGET_CPLUS_LIB)
 
