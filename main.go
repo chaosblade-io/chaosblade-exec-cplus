@@ -33,10 +33,19 @@ import (
 	"github.com/chaosblade-io/chaosblade-exec-cplus/controller"
 )
 
+// Version information - these will be injected at build time
+var (
+	Version   string
+	GitCommit string
+	BuildTime string
+	BuildType string
+)
+
 type Config struct {
-	Port  int
-	IP    string
-	nohup bool
+	Port    int
+	IP      string
+	nohup   bool
+	version bool
 }
 
 func main() {
@@ -44,8 +53,16 @@ func main() {
 	flag.StringVar(&config.IP, "ip", "", "The ip bounds on the service")
 	flag.IntVar(&config.Port, "port", 9525, "The port bounds one the service")
 	flag.BoolVar(&config.nohup, "nohup", false, "used by internal")
+	flag.BoolVar(&config.version, "version", false, "show version information")
 
 	flag.Parse()
+
+	// Show version information if requested
+	if config.version {
+		showVersion()
+		os.Exit(0)
+	}
+
 	util.InitLog(util.Custom)
 	ctx := context.WithValue(context.Background(), channel.ProcessKey, "nohup")
 	pids, err := channel.NewLocalChannel().GetPidsByProcessName(common.BinName, ctx)
@@ -65,6 +82,15 @@ func main() {
 	}
 	log.Printf("success")
 	os.Exit(0)
+}
+
+// showVersion displays version information
+func showVersion() {
+	fmt.Printf("ChaosBlade C++ Executor\n")
+	fmt.Printf("Version: %s\n", Version)
+	fmt.Printf("Git Commit: %s\n", GitCommit)
+	fmt.Printf("Build Time: %s\n", BuildTime)
+	fmt.Printf("Build Type: %s\n", BuildType)
 }
 
 func start(config *Config) error {

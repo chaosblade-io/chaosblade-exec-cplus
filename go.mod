@@ -2,7 +2,7 @@ module github.com/chaosblade-io/chaosblade-exec-cplus
 
 go 1.20
 
-require github.com/chaosblade-io/chaosblade-spec-go v1.7.3
+require github.com/chaosblade-io/chaosblade-spec-go v1.7.4
 
 require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -12,7 +12,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	golang.org/x/sys v0.0.0-20210816074244-15123e1e1f71 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
