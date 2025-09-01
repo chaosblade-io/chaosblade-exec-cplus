@@ -26,6 +26,14 @@ import (
 	"github.com/chaosblade-io/chaosblade-exec-cplus/module"
 )
 
+// Version information - these will be injected at build time
+var (
+	Version   string
+	GitCommit string
+	BuildTime string
+	BuildType string
+)
+
 func main() {
 	if len(os.Args) != 2 {
 		log.Panicln("less yaml file path")
@@ -58,6 +66,10 @@ func getModels() *spec.Models {
 	specModels := make([]*spec.Models, 0)
 	for _, modeSpec := range modelCommandSpecs {
 		specModel := util.ConvertSpecToModels(modeSpec, prepareModel, "host")
+		// Add version information to the spec model
+		if specModel != nil {
+			specModel.Version = Version
+		}
 		specModels = append(specModels, specModel)
 	}
 	return util.MergeModels(specModels...)

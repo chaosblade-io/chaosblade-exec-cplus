@@ -1,0 +1,161 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ master, main ]
+
+env:
+  GO_VERSION: '1.20'
+  CGO_ENABLED: '0'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run tests
+        run: make test
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    needs: test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        goarch: [amd64, arm64]
+        exclude:
+          - os: windows-latest
+            goarch: arm64
+          - os: macos-latest
+            goarch: arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Get version info
+        id: version
+        run: |
+          echo "VERSION=$(./version/version.sh version)" >> $GITHUB_OUTPUT
+          echo "GIT_COMMIT=$(./version/version.sh commit)" >> $GITHUB_OUTPUT
+          echo "BUILD_TIME=$(./version/version.sh build-time)" >> $GITHUB_OUTPUT
+          echo "BUILD_TYPE=$(./version/version.sh build-type)" >> $GITHUB_OUTPUT
+          echo "IS_TAGGED=$(./version/version.sh is-tagged)" >> $GITHUB_OUTPUT
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.os == 'ubuntu-latest' && 'linux' || matrix.os == 'macos-latest' && 'darwin' || 'windows' }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: ${{ env.CGO_ENABLED }}
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            make linux_${{ matrix.goarch }}
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            make darwin_${{ matrix.goarch }}
+          else
+            make windows_amd64
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaosblade-exec-cplus-${{ steps.version.outputs.VERSION }}-${{ matrix.os }}-${{ matrix.goarch }}
+          path: target/chaosblade-${{ steps.version.outputs.VERSION }}/
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Get version info
+        id: version
+        run: |
+          echo "VERSION=$(./version/version.sh version)" >> $GITHUB_OUTPUT
+          echo "GIT_COMMIT=$(./version/version.sh commit)" >> $GITHUB_OUTPUT
+          echo "BUILD_TIME=$(./version/version.sh build-time)" >> $GITHUB_OUTPUT
+          echo "BUILD_TYPE=$(./version/version.sh build-type)" >> $GITHUB_OUTPUT
+
+      - name: Build all platforms
+        run: |
+          make linux_amd64
+          make linux_arm64
+          make darwin_amd64
+          make darwin_arm64
+          make windows_amd64
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.VERSION }}
+          body: |
+            ## ChaosBlade C++ Executor ${{ steps.version.outputs.VERSION }}
+            
+            **Build Info:**
+            - Version: ${{ steps.version.outputs.VERSION }}
+            - Git Commit: ${{ steps.version.outputs.GIT_COMMIT }}
+            - Build Time: ${{ steps.version.outputs.BUILD_TIME }}
+            - Build Type: ${{ steps.version.outputs.BUILD_TYPE }}
+            
+            **Supported Platforms:**
+            - Linux AMD64
+            - Linux ARM64
+            - macOS AMD64
+            - macOS ARM64
+            - Windows AMD64
+            
+            **Downloads:**
+            See the attached artifacts for each platform.
+          files: target/chaosblade-${{ steps.version.outputs.VERSION }}/**
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
