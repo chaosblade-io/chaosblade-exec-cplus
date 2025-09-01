@@ -43,11 +43,9 @@ jobs:
     needs: test
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         goarch: [amd64, arm64]
         exclude:
-          - os: windows-latest
-            goarch: arm64
           - os: macos-latest
             goarch: arm64
 
@@ -81,7 +79,7 @@ jobs:
 
       - name: Build
         env:
-          GOOS: ${{ matrix.os == 'ubuntu-latest' && 'linux' || matrix.os == 'macos-latest' && 'darwin' || 'windows' }}
+          GOOS: ${{ matrix.os == 'ubuntu-latest' && 'linux' || 'darwin' }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: ${{ env.CGO_ENABLED }}
         run: |
@@ -89,8 +87,6 @@ jobs:
             make linux_${{ matrix.goarch }}
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
             make darwin_${{ matrix.goarch }}
-          else
-            make windows_amd64
           fi
 
       - name: Upload build artifacts
@@ -129,7 +125,6 @@ jobs:
           make linux_arm64
           make darwin_amd64
           make darwin_arm64
-          make windows_amd64
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -150,7 +145,6 @@ jobs:
             - Linux ARM64
             - macOS AMD64
             - macOS ARM64
-            - Windows AMD64
             
             **Downloads:**
             See the attached artifacts for each platform.
