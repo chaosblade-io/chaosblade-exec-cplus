@@ -10,7 +10,7 @@ if [ -z "$EXEC_PATH" ] || [ ! -f "$EXEC_PATH" ]; then
 fi
 
 expect -c "
-  spawn gdb -q \"$EXEC_PATH\" $1
+  spawn gdb -q attach $1
   expect {
     \"gdb\" {send \"set follow-fork-mode $2\n\";}
   }
@@ -18,21 +18,13 @@ expect -c "
     \"gdb\" {send \"set pagination off\n\";}
   }
   expect {
-    \"gdb\" {send \"attach $1\n\";}
-  }
-  expect {
-    \"gdb\" {send \"$3\n\";}
-  }
-  expect {
-    \"gdb\" {send \"$4\n\";}
-  }
-  expect {
     \"gdb\" {send \"b $5\n\";}
   }
   expect {
     \"*\" {
-      if {\[string match \"*No symbol table*\" \$expect_out(buffer)\]} {
+      if {[string match \"*No symbol table*\" \$expect_out(buffer)]} {
         send \"y\n\"
+        expect \">\" {send \"commands\n\";}
       } else {
         send \"commands\n\"
       }
