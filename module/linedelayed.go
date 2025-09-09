@@ -86,7 +86,8 @@ func (l *LineDelayedExecutor) Exec(uid string, ctx context.Context, model *spec.
 		log.Warnf(ctx, "get pids by %s process name err, %v", processName, err)
 	}
 	localChannel := channel.NewLocalChannel()
-	if pids == nil || len(pids) == 0 {
+	var response *spec.Response
+	if len(pids) == 0 {
 		args := buildArgs([]string{
 			model.ActionFlags["fileLocateAndName"],
 			model.ActionFlags["forkMode"],
@@ -95,7 +96,7 @@ func (l *LineDelayedExecutor) Exec(uid string, ctx context.Context, model *spec.
 			delayDuration,
 			model.ActionFlags["initParams"],
 		})
-		return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ResponseDelayScript), args)
+		response = localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ResponseDelayScript), args)
 	} else {
 		args := buildArgs([]string{
 			pids[0],
@@ -107,10 +108,21 @@ func (l *LineDelayedExecutor) Exec(uid string, ctx context.Context, model *spec.
 			model.ActionFlags["initParams"],
 		})
 		if "child" == model.ActionFlags["forkMode"] {
-			return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ResponseDelayAttachScript), args)
+			response = localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ResponseDelayAttachScript), args)
+		} else {
+			response = localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ResponseDelayAttachParentScript), args)
 		}
-		return localChannel.Run(context.Background(), path.Join(common.GetScriptPath(), common.ResponseDelayAttachParentScript), args)
 	}
+
+	// Check for gdb execution errors in the response
+	if response.Success && response.Result != nil {
+		// Check if the result contains gdb error messages
+		if resultStr, ok := response.Result.(string); ok && containsGdbError(resultStr) {
+			return spec.ResponseFailWithFlags(spec.CommandIllegal, "gdb execution failed", resultStr)
+		}
+	}
+
+	return response
 }
 
 func (l *LineDelayedExecutor) SetChannel(channel spec.Channel) {

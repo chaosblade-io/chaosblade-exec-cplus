@@ -36,7 +36,8 @@ func (r *RemoveController) GetControllerName() string {
 func (r *RemoveController) GetRequestHandler() func(writer http.ResponseWriter, request *http.Request) {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// TODO 暂时全部杀掉 gdb
-		response := channel.NewLocalChannel().Run(context.Background(), "pkill", "-f gdb")
+		// 使用 shell 命令组合，确保即使没有匹配的进程也返回成功
+		response := channel.NewLocalChannel().Run(context.Background(), "sh", "-c 'pkill -f gdb || true'")
 		fmt.Fprintf(writer, response.Print())
 	}
 }

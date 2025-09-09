@@ -32,3 +32,31 @@ func buildArgs(flags []string) string {
 	}
 	return strings.TrimSpace(args)
 }
+
+// containsGdbError checks if the result contains gdb execution errors
+func containsGdbError(result string) bool {
+	errorPatterns := []string{
+		"couldn't execute \"gdb\"",
+		"no such file or directory",
+		"command not found",
+		"gdb: not found",
+		"spawn: command not found",
+		"no symbol table is loaded",
+		"no executable file now",
+		"no debugging symbols found",
+		"attach: no such file or directory",
+		"could not attach to process",
+		"permission denied",
+		"operation not permitted",
+		"signal: killed",
+		"make breakpoint pending on future shared library load",
+	}
+
+	resultLower := strings.ToLower(result)
+	for _, pattern := range errorPatterns {
+		if strings.Contains(resultLower, strings.ToLower(pattern)) {
+			return true
+		}
+	}
+	return false
+}
