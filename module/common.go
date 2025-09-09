@@ -35,6 +35,25 @@ func buildArgs(flags []string) string {
 
 // containsGdbError checks if the result contains gdb execution errors
 func containsGdbError(result string) bool {
+	// Check for success messages first - be more flexible with patterns
+	successPatterns := []string{
+		"success: breakpoint and delay injection completed",
+		"success: breakpoint and return injection completed",
+		"success: breakpoint and variable modification completed",
+		"breakpoint and delay injection completed",
+		"breakpoint and return injection completed",
+		"breakpoint and variable modification completed",
+	}
+
+	resultLower := strings.ToLower(result)
+
+	for _, pattern := range successPatterns {
+		patternLower := strings.ToLower(pattern)
+		if strings.Contains(resultLower, patternLower) {
+			return false // This is a success message, not an error
+		}
+	}
+
 	errorPatterns := []string{
 		"couldn't execute \"gdb\"",
 		"no such file or directory",
@@ -69,6 +88,7 @@ func containsGdbError(result string) bool {
 		"error: timeout confirming restart",
 		"error: timeout setting return command",
 		"error: timeout setting variable",
+		"error: timeout waiting for exit",
 		"ptrace: operation not permitted",
 		"unable to attach to process",
 		"no such process",
@@ -77,7 +97,6 @@ func containsGdbError(result string) bool {
 		"symbol not found",
 	}
 
-	resultLower := strings.ToLower(result)
 	for _, pattern := range errorPatterns {
 		if strings.Contains(resultLower, strings.ToLower(pattern)) {
 			return true

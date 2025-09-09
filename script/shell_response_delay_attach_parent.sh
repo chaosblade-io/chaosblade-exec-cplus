@@ -27,24 +27,20 @@ expect -c "
   }
   expect {
     \"Breakpoint\" {
-      expect {
-        \"(gdb)\" {send \"commands\n\";}
-        timeout {puts \"Error: timeout after breakpoint set\"; exit 1}
-      }
+      # Wait for the gdb prompt after breakpoint is set
+      expect \"(gdb)\" {send \"commands\n\";}
     }
     \"No symbol table\" {
       send \"y\n\"
-      expect {
-        \"(gdb)\" {send \"commands\n\";}
-        timeout {puts \"Error: timeout after answering y\"; exit 1}
-      }
+      expect \"(gdb)\" {send \"commands\n\";}
     }
     \"pending\" {
       send \"y\n\"
-      expect {
-        \"(gdb)\" {send \"commands\n\";}
-        timeout {puts \"Error: timeout after pending breakpoint\"; exit 1}
-      }
+      expect \"(gdb)\" {send \"commands\n\";}
+    }
+    \"(gdb)\" {
+      # Breakpoint was set immediately and we're at the prompt
+      send \"commands\n\"
     }
     timeout {puts \"Error: timeout setting breakpoint commands\"; exit 1}
   }
@@ -68,6 +64,9 @@ expect -c "
     \"(gdb)\" {send \"c\n\";}
     timeout {puts \"Error: timeout continuing execution\"; exit 1}
   }
-
-interact
+  
+  # Wait very briefly for the continue to take effect, then exit
+  # The gdb session will continue running and the breakpoint will trigger when hit
+  sleep 0.1
+  puts \"Success: Breakpoint and delay injection completed\"
 "

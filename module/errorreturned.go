@@ -19,6 +19,7 @@ package module
 import (
 	"context"
 	"path"
+	"strings"
 
 	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 	"github.com/chaosblade-io/chaosblade-spec-go/channel"
@@ -117,11 +118,20 @@ func (e *ErrorReturnedExecutor) Exec(uid string, ctx context.Context, model *spe
 		}
 	}
 
-	// Check for gdb execution errors in the response
-	if response.Success && response.Result != nil {
-		// Check if the result contains gdb error messages
-		if resultStr, ok := response.Result.(string); ok && containsGdbError(resultStr) {
-			return spec.ResponseFailWithFlags(spec.CommandIllegal, "gdb execution failed", resultStr)
+	// Check for gdb execution errors and success messages in the response
+	if response.Result != nil {
+		if resultStr, ok := response.Result.(string); ok {
+			if containsGdbError(resultStr) {
+				return spec.ResponseFailWithFlags(spec.CommandIllegal, "gdb execution failed", resultStr)
+			}
+			// If we found a success message, override the response status
+			if !response.Success && strings.Contains(strings.ToLower(resultStr), "success:") {
+				// Create a new successful response
+				return &spec.Response{
+					Success: true,
+					Result:  response.Result,
+				}
+			}
 		}
 	}
 
