@@ -41,28 +41,28 @@ func (d *DestroyController) GetRequestHandler() func(writer http.ResponseWriter,
 	return func(writer http.ResponseWriter, request *http.Request) {
 		err := request.ParseForm()
 		if err != nil {
-			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.CommandIllegal, err).Print())
+			fmt.Fprint(writer, spec.ResponseFailWithFlags(spec.CommandIllegal, err).Print())
 			return
 		}
 		suid := request.Form.Get("suid")
 		if suid == "" {
-			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.ParameterLess, "suid").Print())
+			fmt.Fprint(writer, spec.ResponseFailWithFlags(spec.ParameterLess, "suid").Print())
 			return
 		}
 		expModel := Manager.Experiments[suid]
 		if expModel == nil {
-			fmt.Fprintf(writer, spec.ReturnSuccess("the experiment not found").Print())
+			fmt.Fprint(writer, spec.ReturnSuccess("the experiment not found").Print())
 			return
 		}
 		processName := expModel.ActionFlags["processName"]
 		if processName == "" {
-			fmt.Fprintf(writer, spec.ReturnSuccess("success").Print())
+			fmt.Fprint(writer, spec.ReturnSuccess("success").Print())
 			return
 		}
 		localChannel := channel.NewLocalChannel()
 		pids, err := localChannel.GetPidsByProcessName(processName, context.Background())
 		if err == nil && len(pids) == 0 {
-			fmt.Fprintf(writer, spec.ReturnSuccess("success").Print())
+			fmt.Fprint(writer, spec.ReturnSuccess("success").Print())
 			return
 		}
 		var pid string
@@ -72,6 +72,6 @@ func (d *DestroyController) GetRequestHandler() func(writer http.ResponseWriter,
 
 		response := localChannel.Run(context.Background(),
 			path.Join(common.GetScriptPath(), common.RemoveProcessScript), pid)
-		fmt.Fprintf(writer, response.Print())
+		fmt.Fprint(writer, response.Print())
 	}
 }

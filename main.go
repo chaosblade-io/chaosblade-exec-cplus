@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -102,7 +103,7 @@ func start(config *Config) error {
 
 	response := cl.Run(context.TODO(), "nohup", fmt.Sprintf("%s > %s 2>&1 &", args, common.GetChaosBladeLogPath()))
 	if !response.Success {
-		return fmt.Errorf(response.Err)
+		return errors.New(response.Err)
 	}
 	time.Sleep(time.Second)
 	ctx := context.WithValue(context.Background(), channel.ProcessKey, "nohup")

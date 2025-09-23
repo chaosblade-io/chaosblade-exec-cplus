@@ -39,25 +39,25 @@ func (c *CreateController) GetRequestHandler() func(writer http.ResponseWriter, 
 	return func(writer http.ResponseWriter, request *http.Request) {
 		expModel, suid, err := convertRequestToExpModel(request)
 		if err != nil {
-			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.CommandIllegal, err).Print())
+			fmt.Fprint(writer, spec.ResponseFailWithFlags(spec.CommandIllegal, err).Print())
 			return
 		}
 		actionModel := Manager.Actions[expModel.ActionName]
 		if actionModel == nil {
-			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.ActionNotSupport, expModel.ActionName).Print())
+			fmt.Fprint(writer, spec.ResponseFailWithFlags(spec.ActionNotSupport, expModel.ActionName).Print())
 			return
 		}
 		// record
 		err = Manager.Record(suid, expModel)
 		if err != nil {
-			fmt.Fprintf(writer, spec.ResponseFailWithFlags(spec.DatabaseError, "record", err).Print())
+			fmt.Fprint(writer, spec.ResponseFailWithFlags(spec.DatabaseError, "record", err).Print())
 			return
 		}
 		response := actionModel.Executor().Exec(suid, context.Background(), expModel)
 		if !response.Success {
 			Manager.Remove(suid)
 		}
-		fmt.Fprintf(writer, response.Print())
+		fmt.Fprint(writer, response.Print())
 	}
 }
 
