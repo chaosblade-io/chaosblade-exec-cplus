@@ -37,6 +37,6 @@ func (r *RemoveController) GetRequestHandler() func(writer http.ResponseWriter, 
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// TODO 暂时全部杀掉 gdb
 		response := channel.NewLocalChannel().Run(context.Background(), "pkill", "-f gdb")
-		fmt.Fprintf(writer, response.Print())
+		fmt.Fprint(writer, response.Print())
 	}
 }
