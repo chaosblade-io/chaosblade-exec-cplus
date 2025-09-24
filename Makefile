@@ -90,6 +90,8 @@ help:
 	@echo ""
 	@echo "Other Commands:"
 	@echo "  test           - Run tests"
+	@echo "  format         - Format Go code using goimports and gofumpt"
+	@echo "  verify         - Verify Go code formatting and import order"
 	@echo "  clean          - Clean build products"
 	@echo "  all            - Build and test"
 	@echo "  help           - Show this help information"
@@ -226,3 +228,15 @@ build_all: linux_amd64 linux_arm64 darwin_amd64 darwin_arm64 windows_amd64
 	@echo "=========================================="
 
 all: build test
+
+.PHONY: format
+format:
+	@echo "Running goimports and gofumpt to format Go code..."
+	@./hack/update-imports.sh
+	@./hack/update-gofmt.sh
+
+.PHONY: verify
+verify:
+	@echo "Verifying Go code formatting and import order..."
+	@./hack/verify-gofmt.sh
+	@./hack/verify-imports.sh
