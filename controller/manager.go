@@ -31,8 +31,10 @@ type ExpManager struct {
 	Actions map[string]*spec.ActionModel
 }
 
-var Manager *ExpManager
-var once sync.Once
+var (
+	Manager *ExpManager
+	once    sync.Once
+)
 
 func init() {
 	once.Do(func() {

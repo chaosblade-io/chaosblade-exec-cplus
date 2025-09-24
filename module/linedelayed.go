@@ -20,10 +20,11 @@ import (
 	"context"
 	"path"
 
-	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 	"github.com/chaosblade-io/chaosblade-spec-go/channel"
 	"github.com/chaosblade-io/chaosblade-spec-go/log"
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
+
+	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 )
 
 type LineDelayedActionSpec struct {

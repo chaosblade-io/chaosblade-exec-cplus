@@ -23,8 +23,7 @@ import (
 
 const StatusName = "status"
 
-type StatusController struct {
-}
+type StatusController struct{}
 
 func (r *StatusController) GetControllerName() string {
 	return StatusName
