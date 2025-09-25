@@ -28,8 +28,7 @@ import (
 
 const CreateName = "create"
 
-type CreateController struct {
-}
+type CreateController struct{}
 
 func (c *CreateController) GetControllerName() string {
 	return CreateName

@@ -23,15 +23,15 @@ import (
 	"path"
 	"strings"
 
-	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 	"github.com/chaosblade-io/chaosblade-spec-go/channel"
 	"github.com/chaosblade-io/chaosblade-spec-go/spec"
+
+	"github.com/chaosblade-io/chaosblade-exec-cplus/common"
 )
 
 const DestroyName = "destroy"
 
-type DestroyController struct {
-}
+type DestroyController struct{}
 
 func (d *DestroyController) GetControllerName() string {
 	return DestroyName

@@ -26,8 +26,7 @@ import (
 
 const RemoveName = "remove"
 
-type RemoveController struct {
-}
+type RemoveController struct{}
 
 func (r *RemoveController) GetControllerName() string {
 	return RemoveName
